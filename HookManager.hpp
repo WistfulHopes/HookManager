@@ -217,7 +217,7 @@ private:
         return Addr;
     }
 
-    void AddHook()
+    ManagedMidHook()
     {
         Addr = *HookAddr;
         Hook = safetyhook::create_mid(reinterpret_cast<void*>(*HookAddr), [](SafetyHookContext& ctx)
@@ -230,5 +230,16 @@ private:
                 Callback(ctx);
             }
         });
+    }
+
+public:
+    void AddCallback(void(*Callback)(SafetyHookContext&))
+    {
+        Callbacks.push_back(Callback);
+    }
+
+    void RemoveCallback(void(*Callback)(SafetyHookContext&))
+    {
+        Callbacks.push_back(Callback);
     }
 };
