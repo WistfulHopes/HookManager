@@ -121,14 +121,14 @@ public:
         }
         if (!bSkipOriginal)
         {
-            ReturnValue = Hook->Hook.unsafe_call<T>(InArgs...);
+            ReturnValue = Hook->Hook.template unsafe_call<T>(InArgs...);
         }
         for (auto& PostCallback : Hook->PostCallbacks)
         {
-            T Temp = T();
-            if (PostCallback(Temp, InArgs...))
+            T Candidate = ReturnValue;
+            if (PostCallback(Candidate, InArgs...))
             {
-                ReturnValue = Temp;
+                ReturnValue = Candidate;
             }
         }
         return ReturnValue;
@@ -222,7 +222,7 @@ private:
         Addr = *HookAddr;
         Hook = safetyhook::create_mid(reinterpret_cast<void*>(*HookAddr), [](SafetyHookContext& ctx)
         {
-            auto Hook = static_cast<ManagedMidHook*>(HookManager::GetInstance()->GetHook(*HookAddr));
+            auto Hook = static_cast<ManagedMidHook*>(HookManager::GetInstance()->GetMidHook(*HookAddr));
             if (Hook == nullptr) throw std::runtime_error("Hook not found! This should never happen.");
             
             for (auto& Callback : Hook->Callbacks)
@@ -240,6 +240,6 @@ public:
 
     void RemoveCallback(void(*Callback)(SafetyHookContext&))
     {
-        Callbacks.push_back(Callback);
+        std::erase(Callbacks, Callback);
     }
 };
